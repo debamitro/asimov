@@ -1,3 +1,4 @@
+Asimov is a fork of Void
 Void is a fork of VS Code, which is licensed under the MIT License (below).
 Void's additions and modifications are licensed under the Apache 2.0 License (see LICENSE.txt).
 
