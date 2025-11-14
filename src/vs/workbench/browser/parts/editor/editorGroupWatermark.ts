@@ -19,7 +19,7 @@ import { isRecentFolder, IWorkspacesService } from '../../../../platform/workspa
 import { IHostService } from '../../../services/host/browser/host.js';
 import { ILabelService, Verbosity } from '../../../../platform/label/common/label.js';
 import { ColorScheme } from '../../web.api.js';
-import { OpenFileFolderAction, OpenFolderAction } from '../../actions/workspaceActions.js';
+import { OpenFileFolderAction, OpenFolderAction, CreateBookAction } from '../../actions/workspaceActions.js';
 import { IWindowOpenable } from '../../../../platform/window/common/window.js';
 import { splitRecentLabel } from '../../../../base/common/labels.js';
 import { IViewsService } from '../../../services/views/common/viewsService.js';
@@ -192,6 +192,17 @@ export class EditorGroupWatermark extends Disposable {
 				buttonContainer.style.gap = '8px'; // Reduce gap between buttons from 16px to 8px
 				buttonContainer.style.marginBottom = '16px';
 				voidIconBox.appendChild(buttonContainer);
+
+				// Create a book
+				const createBookButton = h('button');
+				createBookButton.root.classList.add('void-openfolder-button')
+				createBookButton.root.style.display = 'block'
+				createBookButton.root.style.width = '124px'
+				createBookButton.root.textContent = 'New Book'
+				createBookButton.root.onclick = () => {
+					this.commandService.executeCommand(CreateBookAction.ID)
+				}
+				buttonContainer.appendChild(createBookButton.root)
 
 				// Open a folder
 				const openFolderButton = h('button')

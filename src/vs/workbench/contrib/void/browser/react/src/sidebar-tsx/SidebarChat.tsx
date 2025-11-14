@@ -11,8 +11,6 @@ import { ScrollType } from '../../../../../../../editor/common/editorCommon.js';
 
 import { ChatMarkdownRender, ChatMessageLocation, getApplyBoxId } from '../markdown/ChatMarkdownRender.js';
 import { URI } from '../../../../../../../base/common/uri.js';
-import * as resources from '../../../../../../../base/common/resources.js';
-import { VSBuffer } from '../../../../../../../base/common/buffer.js';
 import { IDisposable } from '../../../../../../../base/common/lifecycle.js';
 import { ErrorDisplay } from './ErrorDisplay.js';
 import { BlockCode, TextAreaFns, VoidCustomDropdownBox, VoidInputBox2, VoidSlider, VoidSwitch, VoidDiffEditor } from '../util/inputs.js';
@@ -2581,103 +2579,6 @@ const _ChatBubble = ({ threadId, chatMessage, currCheckpointIdx, isCommitted, me
 
 }
 
-const createNewProjectWithMarkdown = async (accessor: ReturnType<typeof useAccessor>) => {
-	const fileService = accessor.get('IFileService')
-	const workspaceContextService = accessor.get('IWorkspaceContextService')
-	const notificationService = accessor.get('INotificationService')
-
-	try {
-		// Get the workspace root folder
-		const workspace = workspaceContextService.getWorkspace()
-		if (!workspace.folders.length) {
-			notificationService.error('No workspace folder is open. Please open a folder first.')
-			return
-		}
-
-		const rootUri = workspace.folders[0].uri
-
-		// Generate a unique book name
-		const timestamp = new Date().toISOString().slice(0, 10) // YYYY-MM-DD format
-		const projectName = `book-${timestamp}-${Math.random().toString(36).substr(2, 8)}`
-		const projectUri = resources.joinPath(rootUri, projectName)
-
-		// Create the project folder
-		await fileService.createFolder(projectUri)
-
-		// Define markdown files to create
-		const markdownFiles = [
-			{
-				name: 'Cover.md',
-				content: `# ${projectName}`
-			},
-			{
-				name: 'Back cover.md',
-				content: `# ${projectName}`
-			},
-			{
-				name: 'Foreword.md',
-				content: `# ${projectName}
-
-## Foreword
-
-
-`
-			},
-			{
-				name: 'Introduction.md',
-				content: `# ${projectName}
-
-## Introduction
-
-<Introduce your readers to your overall idea here>
-`
-			},
-			{
-				name: 'chapters/chap_01.md',
-				content: `# Chapter 1
-
-## Overview
-
-`
-			},
-			{
-				name: 'chapters/chap_2.md',
-				content: `# Chapter 2
-
-`
-			},
-			{
-				name: 'Glossary.md',
-				content: `# Glossary
-`
-			}
-		]
-
-		// Create docs folder first
-		const docsUri = resources.joinPath(projectUri, 'chapters')
-		await fileService.createFolder(docsUri)
-
-		// Create all markdown files
-		for (const file of markdownFiles) {
-			let fileUri: URI
-			if (file.name.startsWith('chapters/')) {
-				fileUri = resources.joinPath(docsUri, file.name.replace('docs/', ''))
-			} else {
-				fileUri = resources.joinPath(projectUri, file.name)
-			}
-
-			const content = VSBuffer.fromString(file.content)
-			await fileService.writeFile(fileUri, content)
-		}
-
-		notificationService.info(`New book "${projectName}" created successfully!`)
-
-	} catch (error) {
-		console.error('Error creating project:', error)
-		notificationService.error(`Failed to create project: ${error}`)
-	}
-}
-
 const CommandBarInChat = () => {
 	const { stateOfURI: commandBarStateOfURI, sortedURIs: sortedCommandBarURIs } = useCommandBarState()
 	const numFilesChanged = sortedCommandBarURIs.length
@@ -3226,27 +3127,10 @@ export const SidebarChat = () => {
 		</div>
 	</div>
 
-	const newProjectButton = (
-		<div className="pt-4">
-			<button
-				className="w-full flex items-center gap-2 px-3 py-2 rounded-md bg-void-bg-3 hover:bg-void-bg-4 border border-void-border-3 transition-colors text-void-fg-2 text-md"
-				onClick={async () => {
-					await createNewProjectWithMarkdown(accessor)
-				}}
-			>
-				<CirclePlus size={16} />
-				Create New Book
-			</button>
-		</div>
-	)
-
 	const landingPageContent = <div
 		ref={sidebarRef}
 		className='w-full h-full max-h-full flex flex-col overflow-auto px-4'
 	>
-		<ErrorBoundary>
-			{newProjectButton}
-		</ErrorBoundary>
 		<ErrorBoundary>
 			{landingPageInput}
 		</ErrorBoundary>
