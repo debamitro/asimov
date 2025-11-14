@@ -3,15 +3,15 @@
  *  Licensed under the Apache license. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer } from '../../../base/common/buffer.js';
-import { URI } from '../../../base/common/uri.js';
-import { type ServicesAccessor } from '../../../editor/browser/editorExtensions.js';
-import { IFileService } from '../../../platform/files/common/files.js';
-import { IWorkspace, IWorkspaceContextService } from '../../../platform/workspace/common/workspace.js';
-import { INotificationService } from '../../../platform/notification/common/notification.js';
-import { IFileDialogService } from '../../../platform/dialogs/common/dialogs.js';
-import { IHostService } from '../../services/host/browser/host.js';
-import * as resources from '../../../base/common/resources.js';
+import { VSBuffer } from '../../../../base/common/buffer.js';
+import { URI } from '../../../../base/common/uri.js';
+import { type ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
+import { IFileService } from '../../../../platform/files/common/files.js';
+import { IWorkspace, IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
+import { INotificationService } from '../../../../platform/notification/common/notification.js';
+import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
+import { IHostService } from '../../../services/host/browser/host.js';
+import * as resources from '../../../../base/common/resources.js';
 
 const getBookRootURI = async (accessor: ServicesAccessor, workspace: IWorkspace): Promise<URI | null> => {
 	if (!workspace.folders.length) {

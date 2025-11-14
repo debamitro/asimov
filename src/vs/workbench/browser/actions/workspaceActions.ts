@@ -23,7 +23,7 @@ import { KeybindingWeight } from '../../../platform/keybinding/common/keybinding
 import { IsMacNativeContext } from '../../../platform/contextkey/common/contextkeys.js';
 import { ILocalizedString } from '../../../platform/action/common/action.js';
 import { Categories } from '../../../platform/action/common/actionCommonCategories.js';
-import { createNewProjectWithMarkdown } from '../../contrib/asimov/bookService.js';
+import { createNewProjectWithMarkdown } from '../../contrib/asimov/common/asimov.js';
 
 const workspacesCategory: ILocalizedString = localize2('workspaces', 'Workspaces');
 
