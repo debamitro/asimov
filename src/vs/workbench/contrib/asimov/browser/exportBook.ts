@@ -13,6 +13,9 @@ import { localize } from '../../../../nls.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import * as resources from '../../../../base/common/resources.js';
 import { VSBuffer } from '../../../../base/common/buffer.js';
+import { URI } from '../../../../base/common/uri.js';
+import { renderMarkdown } from '../../../../base/browser/markdownRenderer.js';
+import { MarkdownString } from '../../../../base/common/htmlContent.js';
 
 export class SaveCurrentBookAction extends Action2 {
 	static readonly ID = 'workbench.asimov.saveCurrentBook';
@@ -49,9 +52,9 @@ export class SaveCurrentBookAction extends Action2 {
 			// Show save dialog
 			const result = await fileDialogService.showSaveDialog({
 				title: localize('saveBookAs', 'Save Book As'),
-				defaultUri: resources.joinPath(rootUri, 'book.zip'),
+				defaultUri: resources.joinPath(rootUri, 'book.pdf'),
 				filters: [
-					{ name: localize('zipFiles', 'ZIP Files'), extensions: ['zip'] }
+					{ name: localize('pdfFiles', 'PDF Files'), extensions: ['pdf'] }
 				]
 			});
 
@@ -59,45 +62,90 @@ export class SaveCurrentBookAction extends Action2 {
 				return;
 			}
 
-			// For now, just create a simple text file indicating the book structure
-			// In a real implementation, this would create a ZIP file with the book contents
-			const bookStructure = await this.getBookStructure(fileService, rootUri);
-			const content = VSBuffer.fromString(JSON.stringify(bookStructure, null, 2));
+			// Find all markdown files in the workspace
+			const markdownFiles = await this.findMarkdownFiles(fileService, rootUri);
 
-			await fileService.writeFile(result, content);
+			if (markdownFiles.length === 0) {
+				notificationService.warn(localize('noMarkdownFiles', 'No markdown files found in the workspace.'));
+				return;
+			}
 
-			notificationService.info(localize('bookSaved', 'Book saved successfully to {0}', result.fsPath));
+			// Read and combine all markdown files into HTML
+			let combinedHtml = `<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Book Export</title>
+	<style>
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+			line-height: 1.6;
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 20px;
+		}
+		h1, h2, h3, h4, h5, h6 { color: #333; }
+		code { background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+		pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+		blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px; font-style: italic; }
+	</style>
+</head>
+<body>`;
+
+			for (const file of markdownFiles.sort((a, b) => a.name.localeCompare(b.name))) {
+				const content = await fileService.readFile(file.uri);
+				const markdownContent = content.value.toString();
+				const htmlContent = this.markdownToHtml(markdownContent);
+				combinedHtml += `<h1>${file.name}</h1>\n${htmlContent}\n<hr style="margin: 40px 0;">\n`;
+			}
+
+			combinedHtml += `</body></html>`;
+
+			const htmlResult = URI.parse(result.fsPath.replace(".pdf", ".html"));
+
+			// Save the HTML file
+			await fileService.writeFile(htmlResult, VSBuffer.fromString(combinedHtml));
+
+			notificationService.info(localize('bookSaved', 'Book saved successfully to {0}', htmlResult.fsPath));
 		} catch (error) {
 			console.error('Error saving book:', error);
 			notificationService.error(localize('saveBookError', 'Failed to save book: {0}', String(error)));
 		}
 	}
 
-	private async getBookStructure(fileService: IFileService, rootUri: any): Promise<any> {
+	private async findMarkdownFiles(fileService: IFileService, rootUri: any): Promise<any[]> {
+		const markdownFiles: any[] = [];
+
 		try {
 			const stat = await fileService.resolve(rootUri, { resolveMetadata: true });
-			const structure: any = {
-				name: stat.name,
-				type: 'folder',
-				children: []
-			};
 
 			if (stat.children) {
 				for (const child of stat.children) {
 					if (child.name.endsWith('.md')) {
-						structure.children.push({
+						markdownFiles.push({
 							name: child.name,
-							type: 'file',
-							size: child.size
+							uri: child.resource
 						});
 					}
 				}
 			}
-
-			return structure;
 		} catch (error) {
-			console.error('Error getting book structure:', error);
-			return { name: 'Unknown Book', type: 'folder', children: [] };
+			console.error('Error finding markdown files:', error);
+		}
+
+		return markdownFiles;
+	}
+
+	private markdownToHtml(markdown: string): string {
+		try {
+			// Use VS Code's markdown renderer
+			const markdownString = new MarkdownString(markdown);
+			const result = renderMarkdown(markdownString);
+			return result.element.innerHTML;
+		} catch (error) {
+			console.error('Error rendering markdown:', error);
+			// Fallback to basic conversion if VS Code renderer fails
+			return "";
 		}
 	}
 }
