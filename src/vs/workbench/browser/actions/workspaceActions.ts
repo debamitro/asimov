@@ -23,7 +23,6 @@ import { KeybindingWeight } from '../../../platform/keybinding/common/keybinding
 import { IsMacNativeContext } from '../../../platform/contextkey/common/contextkeys.js';
 import { ILocalizedString } from '../../../platform/action/common/action.js';
 import { Categories } from '../../../platform/action/common/actionCommonCategories.js';
-import { createNewProjectWithMarkdown } from '../../contrib/asimov/common/asimov.js';
 
 const workspacesCategory: ILocalizedString = localize2('workspaces', 'Workspaces');
 
@@ -290,28 +289,6 @@ class SaveWorkspaceAsAction extends Action2 {
 	}
 }
 
-export class CreateBookAction extends Action2 {
-
-	static readonly ID = 'workbench.action.createBook';
-
-	constructor() {
-		super({
-			id: CreateBookAction.ID,
-			title: localize2('createBook', 'Create Book...'),
-			category: workspacesCategory,
-			f1: true,
-			precondition: EnterMultiRootWorkspaceSupportContext
-		});
-	}
-
-	override async run(accessor: ServicesAccessor): Promise<void> {
-		// Implementation for creating a book will be added here
-		// This is a placeholder for the actual functionality
-		console.log('Create Book action triggered');
-		createNewProjectWithMarkdown(accessor);
-	}
-}
-
 class DuplicateWorkspaceInNewWindowAction extends Action2 {
 
 	static readonly ID = 'workbench.action.duplicateWorkspaceInNewWindow';
@@ -356,7 +333,6 @@ registerAction2(OpenWorkspaceConfigFileAction);
 registerAction2(CloseWorkspaceAction);
 registerAction2(SaveWorkspaceAsAction);
 registerAction2(DuplicateWorkspaceInNewWindowAction);
-registerAction2(CreateBookAction);
 
 // --- Menu Registration
 
@@ -437,16 +413,6 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		title: localize('duplicateWorkspace', "Duplicate Workspace")
 	},
 	order: 3,
-	when: EnterMultiRootWorkspaceSupportContext
-});
-
-MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
-	group: '3_workspace',
-	command: {
-		id: CreateBookAction.ID,
-		title: localize('createBook', "Create Book...")
-	},
-	order: 4,
 	when: EnterMultiRootWorkspaceSupportContext
 });
 

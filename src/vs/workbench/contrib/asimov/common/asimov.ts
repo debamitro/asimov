@@ -53,10 +53,6 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 		// Generate a unique book name
 		const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
 		const projectName = `book-${timestamp}-${Math.random().toString(36).substr(2, 8)}`;
-		const projectUri = resources.joinPath(rootUri, projectName);
-
-		// Create the project folder
-		await fileService.createFolder(projectUri);
 
 		// Define markdown files to create
 		const markdownFiles = [
@@ -107,8 +103,8 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 			}
 		];
 
-		// Create docs folder first
-		const docsUri = resources.joinPath(projectUri, 'chapters');
+		// Create chapters folder first
+		const docsUri = resources.joinPath(rootUri, 'chapters');
 		await fileService.createFolder(docsUri);
 
 		// Create all markdown files
@@ -117,7 +113,7 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 			if (file.name.startsWith('chapters/')) {
 				fileUri = resources.joinPath(docsUri, file.name.replace('chapters/', ''));
 			} else {
-				fileUri = resources.joinPath(projectUri, file.name);
+				fileUri = resources.joinPath(rootUri, file.name);
 			}
 
 			const content = VSBuffer.fromString(file.content);

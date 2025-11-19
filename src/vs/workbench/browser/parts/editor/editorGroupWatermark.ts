@@ -19,10 +19,11 @@ import { isRecentFolder, IWorkspacesService } from '../../../../platform/workspa
 import { IHostService } from '../../../services/host/browser/host.js';
 import { ILabelService, Verbosity } from '../../../../platform/label/common/label.js';
 import { ColorScheme } from '../../web.api.js';
-import { OpenFileFolderAction, OpenFolderAction, CreateBookAction } from '../../actions/workspaceActions.js';
+import { OpenFileFolderAction, OpenFolderAction } from '../../actions/workspaceActions.js';
 import { IWindowOpenable } from '../../../../platform/window/common/window.js';
 import { splitRecentLabel } from '../../../../base/common/labels.js';
 import { IViewsService } from '../../../services/views/common/viewsService.js';
+import { CreateBookAction } from '../../../contrib/asimov/browser/createBook.js';
 
 /* eslint-disable */ // Void
 import { VOID_CTRL_K_ACTION_ID, VOID_CTRL_L_ACTION_ID } from '../../../contrib/void/browser/actionIDs.js';

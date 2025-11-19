@@ -16,6 +16,10 @@ import './browser/workbench.contribution.js';
 import './contrib/void/browser/void.contribution.js'; // Void added this
 //#endregion
 
+//#region --- Asimov
+import './contrib/asimov/browser/asimov.contribution.js';
+//#endregion
+
 //#region --- workbench actions
 
 import './browser/actions/textInputActions.js';
