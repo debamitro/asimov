@@ -16,6 +16,8 @@ import { VSBuffer } from '../../../../base/common/buffer.js';
 import { URI } from '../../../../base/common/uri.js';
 import { renderMarkdown } from '../../../../base/browser/markdownRenderer.js';
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
+import { IBookPrinterService } from '../common/bookPrinterTypes.js';
+import './bookPrinterBrowserService.js'; // Ensure browser service is registered
 
 export class SaveCurrentBookAction extends Action2 {
 	static readonly ID = 'workbench.asimov.saveCurrentBook';
@@ -39,6 +41,7 @@ export class SaveCurrentBookAction extends Action2 {
 		const workspaceContextService = accessor.get(IWorkspaceContextService);
 		const notificationService = accessor.get(INotificationService);
 		const fileDialogService = accessor.get(IFileDialogService);
+		const bookPrinter = accessor.get(IBookPrinterService);
 
 		try {
 			const workspace = workspaceContextService.getWorkspace();
@@ -101,12 +104,26 @@ export class SaveCurrentBookAction extends Action2 {
 
 			combinedHtml += `</body></html>`;
 
-			const htmlResult = URI.parse(result.fsPath.replace(".pdf", ".html"));
+			// Create temporary HTML file
+			const tempHtmlPath = result.fsPath.replace('.pdf', '_temp.html');
+			const tempHtmlUri = URI.file(tempHtmlPath);
+			await fileService.writeFile(tempHtmlUri, VSBuffer.fromString(combinedHtml));
 
-			// Save the HTML file
-			await fileService.writeFile(htmlResult, VSBuffer.fromString(combinedHtml));
+			try {
+				// Convert HTML to PDF using the browser's print functionality
+				const success = await bookPrinter.printPdfBook(tempHtmlPath, result.fsPath);
+				if (!success) {
+					throw new Error('Browser-based PDF generation failed');
+				}
 
-			notificationService.info(localize('bookSaved', 'Book saved successfully to {0}', htmlResult.fsPath));
+				// Clean up temporary HTML file
+				await fileService.del(tempHtmlUri);
+
+				notificationService.info(localize('bookSaved', 'Book saved successfully to {0}', result.fsPath));
+			} catch (pdfError) {
+				console.error('Failed to convert to PDF:', pdfError);
+				notificationService.warn(localize('pdfConversionFailed', 'PDF conversion failed. HTML file saved instead at {0}', tempHtmlPath));
+			}
 		} catch (error) {
 			console.error('Error saving book:', error);
 			notificationService.error(localize('saveBookError', 'Failed to save book: {0}', String(error)));
@@ -141,7 +158,10 @@ export class SaveCurrentBookAction extends Action2 {
 			// Use VS Code's markdown renderer
 			const markdownString = new MarkdownString(markdown);
 			const result = renderMarkdown(markdownString);
-			return result.element.innerHTML;
+			const html = result.element.innerHTML;
+			// Properly dispose of the result to prevent memory leaks
+			result.dispose();
+			return html;
 		} catch (error) {
 			console.error('Error rendering markdown:', error);
 			// Fallback to basic conversion if VS Code renderer fails

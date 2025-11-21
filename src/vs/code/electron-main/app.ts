@@ -118,6 +118,8 @@ import { AuxiliaryWindowsMainService } from '../../platform/auxiliaryWindow/elec
 import { normalizeNFC } from '../../base/common/normalization.js';
 import { ICSSDevelopmentService, CSSDevelopmentService } from '../../platform/cssDev/node/cssDevService.js';
 import { INativeMcpDiscoveryHelperService, NativeMcpDiscoveryHelperChannelName } from '../../platform/mcp/common/nativeMcpDiscoveryHelper.js';
+import { IBookPrinterService } from '../../workbench/contrib/asimov/common/bookPrinterTypes.js';
+import { BookPrinterService } from '../../workbench/contrib/asimov/electron-main/bookPrinterService.js';
 import { NativeMcpDiscoveryHelperService } from '../../platform/mcp/node/nativeMcpDiscoveryHelperService.js';
 import { IWebContentExtractorService } from '../../platform/webContentExtractor/common/webContentExtractor.js';
 import { NativeWebContentExtractorService } from '../../platform/webContentExtractor/electron-main/webContentExtractorService.js';
@@ -1119,6 +1121,8 @@ export class CodeApplication extends Disposable {
 		// MCP
 		services.set(INativeMcpDiscoveryHelperService, new SyncDescriptor(NativeMcpDiscoveryHelperService));
 
+		// Asimov Book Printer
+		services.set(IBookPrinterService, new SyncDescriptor(BookPrinterService));
 
 		// Dev Only: CSS service (for ESM)
 		services.set(ICSSDevelopmentService, new SyncDescriptor(CSSDevelopmentService, undefined, true));
@@ -1253,6 +1257,12 @@ export class CodeApplication extends Disposable {
 		// Void added this
 		const mcpChannel = new MCPChannel();
 		mainProcessElectronServer.registerChannel('void-channel-mcp', mcpChannel);
+
+		// Asimov Book Printer
+		const bookPrinterService = accessor.get(IBookPrinterService);
+		validatedIpcMain.handle('vscode:asimov-printPdf', async (_, htmlPath: string, pdfPath: string): Promise<boolean> => {
+			return bookPrinterService.printPdfBook(htmlPath, pdfPath);
+		});
 
 		// Extension Host Debug Broadcasting
 		const electronExtensionHostDebugBroadcastChannel = new ElectronExtensionHostDebugBroadcastChannel(accessor.get(IWindowsMainService));
