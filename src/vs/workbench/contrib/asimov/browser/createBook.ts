@@ -26,7 +26,6 @@ export class CreateBookAction extends Action2 {
 	async run(accessor: ServicesAccessor): Promise<void> {
 		// Implementation for creating a book will be added here
 		// This is a placeholder for the actual functionality
-		console.log('Create Book action triggered');
 		createNewProjectWithMarkdown(accessor);
 	}
 }

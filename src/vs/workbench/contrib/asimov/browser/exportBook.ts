@@ -19,21 +19,28 @@ import { MarkdownString } from '../../../../base/common/htmlContent.js';
 import { IBookPrinterService } from '../common/bookPrinterTypes.js';
 import { FileAccess } from '../../../../base/common/network.js';
 import './bookPrinterBrowserService.js'; // Ensure browser service is registered
+import { ContextKeyTrueExpr } from '../../../../platform/contextkey/common/contextkey.js';
 
 export class SaveCurrentBookAction extends Action2 {
-	static readonly ID = 'workbench.asimov.saveCurrentBook';
-	static readonly LABEL = localize('saveCurrentBook', 'Save Current Book');
+	static readonly ID = 'workbench.asimov.exportCurrentBook';
+	static readonly LABEL = localize('exportCurrentBook', 'Export Book');
 
 	constructor() {
 		super({
 			id: SaveCurrentBookAction.ID,
 			title: SaveCurrentBookAction.LABEL,
 			icon: Codicon.save,
-			menu: {
-				id: MenuId.MenubarFileMenu,
-				group: '4_save',
-				order: 3
-			}
+			menu: [
+				{
+					id: MenuId.MenubarFileMenu,
+					group: '4_save',
+					order: 3
+				},
+				{
+					id: MenuId.CommandPalette,
+					when: ContextKeyTrueExpr.INSTANCE
+				}
+			]
 		});
 	}
 
