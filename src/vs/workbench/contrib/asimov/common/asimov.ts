@@ -11,6 +11,7 @@ import { IWorkspace, IWorkspaceContextService } from '../../../../platform/works
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { IHostService } from '../../../services/host/browser/host.js';
+import { FileAccess } from '../../../../base/common/network.js';
 import * as resources from '../../../../base/common/resources.js';
 
 const getBookRootURI = async (accessor: ServicesAccessor, workspace: IWorkspace): Promise<URI | null> => {
@@ -61,10 +62,6 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 				content: `# ${projectName}`
 			},
 			{
-				name: 'Back cover.md',
-				content: `# ${projectName}`
-			},
-			{
 				name: 'Foreword.md',
 				content: `# ${projectName}
 
@@ -100,6 +97,10 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 				name: 'Glossary.md',
 				content: `# Glossary
 `
+			},
+			{
+				name: 'Back cover.md',
+				content: `# ${projectName}`
 			}
 		];
 
@@ -119,6 +120,25 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 			const content = VSBuffer.fromString(file.content);
 			await fileService.writeFile(fileUri, content);
 		}
+
+		const bookOrderFileUri: URI = resources.joinPath(rootUri, 'book_structure.txt');
+		const bookFilesInOrder = [
+			'Cover.md',
+			'Foreword.md',
+			'Introduction.md',
+			'chapters/chap_01.md',
+			'chapters/chap_02.md',
+			'Glossary.md',
+			'Back cover.md'
+		];
+		const bookOrderContent = VSBuffer.fromString(bookFilesInOrder.join('\n'));
+		await fileService.writeFile(bookOrderFileUri, bookOrderContent);
+
+		// Copy interface.css from bundled resource to user's directory
+		const interfaceCssFileUri: URI = resources.joinPath(rootUri, 'interface.css');
+		const bundledCssUri = FileAccess.asFileUri('vs/workbench/contrib/asimov/browser/media/interface.css');
+		const cssContent = await fileService.readFile(bundledCssUri);
+		await fileService.writeFile(interfaceCssFileUri, cssContent.value);
 
 		notificationService.info(`New book "${projectName}" created successfully!`);
 

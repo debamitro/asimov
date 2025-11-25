@@ -17,6 +17,7 @@ import { URI } from '../../../../base/common/uri.js';
 import { renderMarkdown } from '../../../../base/browser/markdownRenderer.js';
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
 import { IBookPrinterService } from '../common/bookPrinterTypes.js';
+import { FileAccess } from '../../../../base/common/network.js';
 import './bookPrinterBrowserService.js'; // Ensure browser service is registered
 
 export class SaveCurrentBookAction extends Action2 {
@@ -66,7 +67,26 @@ export class SaveCurrentBookAction extends Action2 {
 			}
 
 			// Find all markdown files in the workspace
-			const markdownFiles = await this.findMarkdownFiles(fileService, rootUri);
+			const markdownFiles = [];
+			const bookStructurePath = resources.joinPath(rootUri, 'book_structure.txt');
+			try {
+				const fileContent = await fileService.readFile(bookStructurePath);
+				const fileLines = fileContent.value.toString().split('\n');
+				for (const line of fileLines) {
+					const trimmedLine = line.trim();
+					if (trimmedLine) {
+						const filePath = resources.joinPath(rootUri, trimmedLine);
+						markdownFiles.push({
+							name: resources.basename(filePath),
+							uri: filePath
+						});
+					}
+				}
+			} catch (error) {
+				console.error('Error reading book_structure.txt:', error);
+				notificationService.warn(localize('noBookStructureFile', 'Could not read book_structure.txt. No markdown files loaded.'));
+				return;
+			}
 
 			if (markdownFiles.length === 0) {
 				notificationService.warn(localize('noMarkdownFiles', 'No markdown files found in the workspace.'));
@@ -78,19 +98,25 @@ export class SaveCurrentBookAction extends Action2 {
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>Book Export</title>
+	<title>Book</title>
+        <script src="paged.polyfill.js"></script>
+        <link rel="stylesheet" href="interface.css" type="text/css"/>
 	<style>
-		body {
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-			line-height: 1.6;
-			max-width: 800px;
-			margin: 0 auto;
-			padding: 20px;
-		}
-		h1, h2, h3, h4, h5, h6 { color: #333; }
-		code { background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
-		pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
-		blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px; font-style: italic; }
+.chapter {
+    break-before: right;
+}
+
+   @page {
+        @bottom-center:not(.pagedjs_blank_page) {
+            content: "- " counter(page) " -";
+        }
+    }
+
+@page: left {
+    @top-center {
+        content: "A book";
+    }
+}
 	</style>
 </head>
 <body>`;
@@ -99,7 +125,7 @@ export class SaveCurrentBookAction extends Action2 {
 				const content = await fileService.readFile(file.uri);
 				const markdownContent = content.value.toString();
 				const htmlContent = this.markdownToHtml(markdownContent);
-				combinedHtml += `<h1>${file.name}</h1>\n${htmlContent}\n<hr style="margin: 40px 0;">\n`;
+				combinedHtml += `<section class="chapter">${htmlContent}</section>\n`;
 			}
 
 			combinedHtml += `</body></html>`;
@@ -109,6 +135,11 @@ export class SaveCurrentBookAction extends Action2 {
 			const tempHtmlUri = URI.file(tempHtmlPath);
 			await fileService.writeFile(tempHtmlUri, VSBuffer.fromString(combinedHtml));
 
+			const pagedJsFileUri: URI = resources.joinPath(rootUri, 'paged.polyfill.js');
+			const bundledJsUri = FileAccess.asFileUri('vs/workbench/contrib/asimov/browser/media/paged.polyfill.js');
+			const jsContent = await fileService.readFile(bundledJsUri);
+			await fileService.writeFile(pagedJsFileUri, jsContent.value);
+
 			try {
 				// Convert HTML to PDF using the browser's print functionality
 				const success = await bookPrinter.printPdfBook(tempHtmlPath, result.fsPath);
@@ -117,7 +148,7 @@ export class SaveCurrentBookAction extends Action2 {
 				}
 
 				// Clean up temporary HTML file
-				await fileService.del(tempHtmlUri);
+				// await fileService.del(tempHtmlUri);
 
 				notificationService.info(localize('bookSaved', 'Book saved successfully to {0}', result.fsPath));
 			} catch (pdfError) {
@@ -128,29 +159,6 @@ export class SaveCurrentBookAction extends Action2 {
 			console.error('Error saving book:', error);
 			notificationService.error(localize('saveBookError', 'Failed to save book: {0}', String(error)));
 		}
-	}
-
-	private async findMarkdownFiles(fileService: IFileService, rootUri: any): Promise<any[]> {
-		const markdownFiles: any[] = [];
-
-		try {
-			const stat = await fileService.resolve(rootUri, { resolveMetadata: true });
-
-			if (stat.children) {
-				for (const child of stat.children) {
-					if (child.name.endsWith('.md')) {
-						markdownFiles.push({
-							name: child.name,
-							uri: child.resource
-						});
-					}
-				}
-			}
-		} catch (error) {
-			console.error('Error finding markdown files:', error);
-		}
-
-		return markdownFiles;
 	}
 
 	private markdownToHtml(markdown: string): string {
