@@ -11,7 +11,6 @@ import { Widget } from '../../../../base/browser/ui/widget.js';
 import { IOverlayWidget, ICodeEditor, OverlayWidgetPositionPreference } from '../../../../editor/browser/editorBrowser.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
-import { mountVoidCommandBar } from './react/out/void-editor-widgets-tsx/index.js'
 import { deepClone } from '../../../../base/common/objects.js';
 import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
 import { IEditCodeService } from './editCodeServiceInterface.js';
@@ -533,7 +532,8 @@ class AcceptRejectAllFloatingWidget extends Widget implements IOverlayWidget {
 		this._domNode = root;
 		editor.addOverlayWidget(this);
 
-		this.instantiationService.invokeFunction(accessor => {
+		this.instantiationService.invokeFunction(async accessor => {
+			const { mountVoidCommandBar } = await import('./react/out/void-editor-widgets-tsx/index.js');
 			const uri = editor.getModel()?.uri || null
 			const res = mountVoidCommandBar(root, accessor, { uri, editor } satisfies VoidCommandBarProps)
 			if (!res) return
