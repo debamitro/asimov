@@ -202,7 +202,7 @@ MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 	group: '0_command',
 	command: {
 		id: VOID_TOGGLE_SETTINGS_ACTION_ID,
-		title: nls.localize('voidSettingsActionGear', "Void\'s Settings")
+		title: nls.localize('voidSettingsActionGear', "Chat Settings")
 	},
 	order: 1
 });

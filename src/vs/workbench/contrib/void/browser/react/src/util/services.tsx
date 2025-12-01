@@ -410,7 +410,7 @@ export const useIsOptedOut = () => {
 	const storageService = accessor.get('IStorageService')
 
 	const getVal = useCallback(() => {
-		return storageService.getBoolean(OPT_OUT_KEY, StorageScope.APPLICATION, false)
+		return storageService.getBoolean(OPT_OUT_KEY, StorageScope.APPLICATION, true)
 	}, [storageService])
 
 	const [s, ss] = useState(getVal())
