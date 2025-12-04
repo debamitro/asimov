@@ -1,0 +1,33 @@
+.chapter {
+	break-before: right;
+}
+.chapter h1 {
+	string-set: chaptertitle content(text);
+}
+.chapter h2 {
+	border-bottom: 2px solid var(--color-lightest-grey);
+	margin-top: 0;
+	padding-top: 3em;
+	font-size:1.66em
+}
+.cover h1 {
+	font-size: 2em;
+}
+
+@page {
+	@bottom-center:not(.pagedjs_blank_page) {
+		content: "- " counter(page) " -";
+	}
+}
+
+@page:left {
+	@top-center {
+		content: "";
+	}
+}
+
+@page:right {
+	@top-center {
+		content: string(chaptertitle);
+	}
+}

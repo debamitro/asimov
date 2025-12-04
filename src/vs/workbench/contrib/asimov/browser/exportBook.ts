@@ -119,7 +119,7 @@ export class SaveCurrentBookAction extends Action2 {
         }
     }
 
-@page: left {
+@page:left {
     @top-center {
         content: "A book";
     }

@@ -11,6 +11,7 @@ import { IWorkspace, IWorkspaceContextService } from '../../../../platform/works
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { IHostService } from '../../../services/host/browser/host.js';
+import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
 import { FileAccess } from '../../../../base/common/network.js';
 import * as resources from '../../../../base/common/resources.js';
 
@@ -41,6 +42,7 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 	const workspaceContextService = accessor.get(IWorkspaceContextService);
 	const notificationService = accessor.get(INotificationService);
 	const hostService = accessor.get(IHostService);
+	const quickInputService = accessor.get(IQuickInputService);
 
 	try {
 		// Get the workspace root folder
@@ -51,9 +53,16 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 			return;
 		}
 
-		// Generate a unique book name
-		const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
-		const projectName = `book-${timestamp}-${Math.random().toString(36).substr(2, 8)}`;
+		// Ask user for the book name
+		const projectName = await quickInputService.input({
+			placeHolder: 'Enter book name',
+			prompt: 'Please enter the name for your new book',
+			value: `Book-${new Date().toISOString().slice(0, 10)}`
+		});
+		if (!projectName) {
+			notificationService.info('Book name input cancelled. Book creation aborted.');
+			return;
+		}
 
 		// Define markdown files to create
 		const markdownFiles = [
@@ -121,24 +130,32 @@ export const createNewProjectWithMarkdown = async (accessor: ServicesAccessor) =
 			await fileService.writeFile(fileUri, content);
 		}
 
-		const bookOrderFileUri: URI = resources.joinPath(rootUri, 'book_structure.txt');
-		const bookFilesInOrder = [
-			'Cover.md',
-			'Foreword.md',
-			'Introduction.md',
-			'chapters/chap_01.md',
-			'chapters/chap_02.md',
-			'Glossary.md',
-			'Back cover.md'
-		];
-		const bookOrderContent = VSBuffer.fromString(bookFilesInOrder.join('\n'));
-		await fileService.writeFile(bookOrderFileUri, bookOrderContent);
+		const bookOrderFileUri: URI = resources.joinPath(rootUri, 'book_project.json');
+		const bookProjectContent = {
+			order: [
+				'Cover.md',
+				'Foreword.md',
+				'Introduction.md',
+				'chapters/chap_01.md',
+				'chapters/chap_02.md',
+				'Glossary.md',
+				'Back cover.md'
+			]
+		};
+		const content = VSBuffer.fromString(JSON.stringify(bookProjectContent, null, 2));
+		await fileService.writeFile(bookOrderFileUri, content);
 
-		// Copy interface.css from bundled resource to user's directory
-		const interfaceCssFileUri: URI = resources.joinPath(rootUri, 'interface.css');
-		const bundledCssUri = FileAccess.asFileUri('vs/workbench/contrib/asimov/browser/media/interface.css');
-		const cssContent = await fileService.readFile(bundledCssUri);
-		await fileService.writeFile(interfaceCssFileUri, cssContent.value);
+		const cssFiles = [
+			{ name: 'interface.css', bundledPath: 'vs/workbench/contrib/asimov/browser/media/interface.css' as const },
+			{ name: 'style.css', bundledPath: 'vs/workbench/contrib/asimov/browser/media/style.css' as const }
+		];
+
+		for (const cssFile of cssFiles) {
+			const fileUri: URI = resources.joinPath(rootUri, cssFile.name);
+			const bundledUri = FileAccess.asFileUri(cssFile.bundledPath);
+			const content = await fileService.readFile(bundledUri);
+			await fileService.writeFile(fileUri, content.value);
+		}
 
 		notificationService.info(`New book "${projectName}" created successfully!`);
 
