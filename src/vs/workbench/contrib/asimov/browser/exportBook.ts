@@ -75,23 +75,23 @@ export class SaveCurrentBookAction extends Action2 {
 
 			// Find all markdown files in the workspace
 			const markdownFiles = [];
-			const bookStructurePath = resources.joinPath(rootUri, 'book_structure.txt');
+			const bookStructurePath = resources.joinPath(rootUri, 'book_project.json');
 			try {
 				const fileContent = await fileService.readFile(bookStructurePath);
-				const fileLines = fileContent.value.toString().split('\n');
-				for (const line of fileLines) {
-					const trimmedLine = line.trim();
-					if (trimmedLine) {
-						const filePath = resources.joinPath(rootUri, trimmedLine);
+				const fileData = fileContent.value.toString();
+				const bookStructure = JSON.parse(fileData);
+				if (Array.isArray(bookStructure.order)) {
+					for (const filePath of bookStructure.order) {
+						const fullPath = resources.joinPath(rootUri, filePath);
 						markdownFiles.push({
-							name: resources.basename(filePath),
-							uri: filePath
+							name: resources.basename(fullPath),
+							uri: fullPath
 						});
 					}
 				}
 			} catch (error) {
-				console.error('Error reading book_structure.txt:', error);
-				notificationService.warn(localize('noBookStructureFile', 'Could not read book_structure.txt. No markdown files loaded.'));
+				console.error('Error reading book_project.json:', error);
+				notificationService.warn(localize('noBookStructureFile', 'Could not read book_project.json. No markdown files loaded.'));
 				return;
 			}
 
@@ -108,31 +108,20 @@ export class SaveCurrentBookAction extends Action2 {
 	<title>Book</title>
         <script src="paged.polyfill.js"></script>
         <link rel="stylesheet" href="interface.css" type="text/css"/>
-	<style>
-.chapter {
-    break-before: right;
-}
-
-   @page {
-        @bottom-center:not(.pagedjs_blank_page) {
-            content: "- " counter(page) " -";
-        }
-    }
-
-@page:left {
-    @top-center {
-        content: "A book";
-    }
-}
-	</style>
+        <link rel="stylesheet" href="style.css" type="text/css"/>
 </head>
 <body>`;
 
-			for (const file of markdownFiles.sort((a, b) => a.name.localeCompare(b.name))) {
+			for (const file of markdownFiles) {
 				const content = await fileService.readFile(file.uri);
 				const markdownContent = content.value.toString();
 				const htmlContent = this.markdownToHtml(markdownContent);
-				combinedHtml += `<section class="chapter">${htmlContent}</section>\n`;
+				if (file.name === 'Cover.md') {
+					combinedHtml += `<section class="cover">${htmlContent}</section>\n`;
+				}
+				else {
+					combinedHtml += `<section class="chapter">${htmlContent}</section>\n`;
+				}
 			}
 
 			combinedHtml += `</body></html>`;
