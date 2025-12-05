@@ -65,7 +65,10 @@ export const defaultProviderSettings = {
 		region: 'us-east-1', // add region setting
 		endpoint: '', // optionally allow overriding default
 	},
-
+	vercel: {
+		apiKey: '',
+		endpoint: 'https://api.v0.dev/v1/'
+	},
 } as const
 
 
@@ -92,11 +95,13 @@ export const defaultModelsOfProvider = {
 		'claude-3-opus-latest',
 	],
 	xAI: [ // https://docs.x.ai/docs/models?cluster=us-east-1
-		'grok-2',
 		'grok-3',
 		'grok-3-mini',
 		'grok-3-fast',
-		'grok-3-mini-fast'
+		'grok-3-mini-fast',
+		'grok-4-fast-non-reasoning',
+		'grok-4-fast-reasoning',
+		'grok-code-fast-1'
 	],
 	gemini: [ // https://ai.google.dev/gemini-api/docs/models/gemini
 		'gemini-2.5-pro-exp-03-25',
@@ -153,8 +158,10 @@ export const defaultModelsOfProvider = {
 	microsoftAzure: [],
 	awsBedrock: [],
 	liteLLM: [],
-
-
+	vercel: [
+		'v0-1.5-md',
+		'v0-1.5-lg'
+	],
 } as const satisfies Record<ProviderName, string[]>
 
 
@@ -1133,6 +1140,32 @@ const awsBedrockSettings: VoidStaticProviderInfo = {
 	},
 }
 
+const vercelOptions = {
+	"v0-1.0-md": {
+		contextWindow: 128_000,
+		reservedOutputTokenSpace: 64_000,
+		cost: { input: 0.79, output: 0.79 },
+		downloadable: false,
+		supportsFIM: false,
+		supportsSystemMessage: 'system-role',
+		reasoningCapabilities: false,
+	},
+	"v0-1.0-lg": {
+		contextWindow: 128_000,
+		reservedOutputTokenSpace: 64_000,
+		cost: { input: 0.79, output: 0.79 },
+		downloadable: false,
+		supportsFIM: false,
+		supportsSystemMessage: 'system-role',
+		reasoningCapabilities: false,
+	},
+} as const satisfies Record<string, VoidStaticModelInfo>
+
+const vercelSettings: VoidStaticProviderInfo = {
+	modelOptions: vercelOptions,
+	modelOptionsFallback: (modelName) => { return null },
+}
+
 
 // ---------------- VLLM, OLLAMA, OPENAICOMPAT (self-hosted / local) ----------------
 const ollamaModelOptions = {
@@ -1474,6 +1507,8 @@ const modelSettingsOfProvider: { [providerName in ProviderName]: VoidStaticProvi
 	googleVertex: googleVertexSettings,
 	microsoftAzure: microsoftAzureSettings,
 	awsBedrock: awsBedrockSettings,
+
+	vercel: vercelSettings,
 } as const
 
 
