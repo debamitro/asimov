@@ -104,6 +104,9 @@ const vscodeResourceIncludes = [
 
 	// Tree Sitter injection queries
 	'out-build/vs/editor/common/languages/injections/*.scm',
+
+	// Asimov
+	'out-build/vs/workbench/contrib/asimov/browser/media/*.{js,css}',
 ];
 
 const vscodeResources = [
