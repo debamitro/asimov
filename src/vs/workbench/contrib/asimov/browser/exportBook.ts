@@ -14,8 +14,7 @@ import { Codicon } from '../../../../base/common/codicons.js';
 import * as resources from '../../../../base/common/resources.js';
 import { VSBuffer } from '../../../../base/common/buffer.js';
 import { URI } from '../../../../base/common/uri.js';
-import { renderMarkdown } from '../../../../base/browser/markdownRenderer.js';
-import { MarkdownString } from '../../../../base/common/htmlContent.js';
+import * as marked from '../../../../base/common/marked/marked.js';
 import { IBookPrinterService } from '../common/bookPrinterTypes.js';
 import { FileAccess } from '../../../../base/common/network.js';
 import './bookPrinterBrowserService.js'; // Ensure browser service is registered
@@ -119,6 +118,9 @@ export class SaveCurrentBookAction extends Action2 {
 				if (file.name === 'Cover.md') {
 					combinedHtml += `<section class="cover">${htmlContent}</section>\n`;
 				}
+				else if (file.name == 'Back cover.md') {
+					combinedHtml += `<section class="back_cover">${htmlContent}</section>\n`;
+				}
 				else {
 					combinedHtml += `<section class="chapter">${htmlContent}</section>\n`;
 				}
@@ -159,16 +161,12 @@ export class SaveCurrentBookAction extends Action2 {
 
 	private markdownToHtml(markdown: string): string {
 		try {
-			// Use VS Code's markdown renderer
-			const markdownString = new MarkdownString(markdown);
-			const result = renderMarkdown(markdownString);
-			const html = result.element.innerHTML;
-			// Properly dispose of the result to prevent memory leaks
-			result.dispose();
+			// Use marked.js directly to avoid VS Code's image path rewriting
+			const html = marked.parse(markdown, { async: false });
 			return html;
 		} catch (error) {
 			console.error('Error rendering markdown:', error);
-			// Fallback to basic conversion if VS Code renderer fails
+			// Fallback to basic conversion if marked.js fails
 			return "";
 		}
 	}

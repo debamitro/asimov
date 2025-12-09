@@ -108,15 +108,15 @@ export class BookPrinterService implements IBookPrinterService {
 				});
 
 				// Take a screenshot before closing the browser
-				const screenshotPath = pdfPath.replace('.pdf', '_preview.png');
-				const screenshotBuffer = await page.screenshot({
-					fullPage: true,
-					type: 'png'
-				});
+				//const screenshotPath = pdfPath.replace('.pdf', '_preview.png');
+				//const screenshotBuffer = await page.screenshot({
+				//	fullPage: true,
+				//	type: 'png'
+				//});
 
 				// Save screenshot using file service
-				const screenshotUri = URI.file(screenshotPath);
-				await this.fileService.writeFile(screenshotUri, VSBuffer.wrap(screenshotBuffer));
+				//const screenshotUri = URI.file(screenshotPath);
+				//await this.fileService.writeFile(screenshotUri, VSBuffer.wrap(screenshotBuffer));
 
 				// Close browser
 				await browser.close();

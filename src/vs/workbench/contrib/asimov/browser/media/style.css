@@ -1,17 +1,44 @@
+/**************************************************************/
+/************ You can customize this file *********************/
+/**************************************************************/
+
 .chapter {
 	break-before: right;
+	font-family: 'Georgia', 'Times New Roman', serif;
 }
 .chapter h1 {
 	string-set: chaptertitle content(text);
+	font-family: 'Georgia', 'Times New Roman', serif;
 }
 .chapter h2 {
 	border-bottom: 2px solid var(--color-lightest-grey);
 	margin-top: 0;
 	padding-top: 3em;
-	font-size:1.66em
+	font-size:1.66em;
+	font-family: 'Georgia', 'Times New Roman', serif;
 }
 .cover h1 {
 	font-size: 2em;
+	font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.cover {
+	text-align: center;
+	page: coverPage;
+}
+
+.cover img {
+	width: 512px;
+}
+
+.back_cover {
+	text-align: center;
+	page: coverPage;
+}
+
+.back_cover h1 {
+	font-size: 1.6em;
+	font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 @page {
@@ -20,9 +47,20 @@
 	}
 }
 
-@page:left {
+@page coverPage {
 	@top-center {
 		content: "";
+	}
+
+	@bottom-center {
+		content: "";
+	}
+}
+
+
+@page:left {
+	@top-center {
+		content: "";  /**** Set the book's title here ****/
 	}
 }
 
@@ -31,3 +69,4 @@
 		content: string(chaptertitle);
 	}
 }
+
