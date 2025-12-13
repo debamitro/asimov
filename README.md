@@ -1,5 +1,7 @@
 # Welcome to Asimov.
 
+![downloads](https://img.shields.io/github/downloads/debamitro/asimov/total)
+
 Asimov is an open-source 'Cursor for writers'. It is a fork of [Void](https://voideditor.com) - the open-source Cursor alternative.
 
 ## Download
