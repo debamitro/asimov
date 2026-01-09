@@ -140,9 +140,9 @@ export class SaveCurrentBookAction extends Action2 {
 
 			try {
 				// Convert HTML to PDF using the browser's print functionality
-				const success = await bookPrinter.printPdfBook(tempHtmlPath, result.fsPath);
+				const [success, reason] = await bookPrinter.printPdfBook(tempHtmlPath, result.fsPath);
 				if (!success) {
-					throw new Error('Browser-based PDF generation failed');
+					throw new Error(reason);
 				}
 
 				// Clean up temporary HTML file

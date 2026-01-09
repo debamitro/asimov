@@ -19,7 +19,7 @@ export class BookPrinterService implements IBookPrinterService {
 	) {
 	}
 
-	async printPdfBook(htmlPath: string, pdfPath: string): Promise<boolean> {
+	async printPdfBook(htmlPath: string, pdfPath: string): Promise<[boolean, string]> {
 		return new Promise(async (resolve) => {
 			let server: http.Server | null = null;
 
@@ -125,10 +125,10 @@ export class BookPrinterService implements IBookPrinterService {
 				const pdfUri = URI.file(pdfPath);
 				await this.fileService.writeFile(pdfUri, VSBuffer.wrap(pdfBuffer));
 
-				resolve(true);
+				resolve([true, ""]);
 			} catch (error) {
 				console.error('Error in PDF generation:', error);
-				resolve(false);
+				resolve([false, error instanceof Error ? error.message : String(error)]);
 			} finally {
 				// Always close the server
 				if (server) {

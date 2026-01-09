@@ -1260,7 +1260,7 @@ export class CodeApplication extends Disposable {
 
 		// Asimov Book Printer
 		const bookPrinterService = accessor.get(IBookPrinterService);
-		validatedIpcMain.handle('vscode:asimov-printPdf', async (_, htmlPath: string, pdfPath: string): Promise<boolean> => {
+		validatedIpcMain.handle('vscode:asimov-printPdf', async (_, htmlPath: string, pdfPath: string): Promise<[boolean, string]> => {
 			return bookPrinterService.printPdfBook(htmlPath, pdfPath);
 		});
 

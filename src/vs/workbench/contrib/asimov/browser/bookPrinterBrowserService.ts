@@ -8,10 +8,10 @@ import { IBookPrinterService } from '../common/bookPrinterTypes.js';
 import { ISandboxGlobals } from '../../../../base/parts/sandbox/electron-sandbox/globals.js';
 
 export class BookPrinterBrowserService implements IBookPrinterService {
-	
-	constructor() {}
 
-	async printPdfBook(htmlPath: string, pdfPath: string): Promise<boolean> {
+	constructor() { }
+
+	async printPdfBook(htmlPath: string, pdfPath: string): Promise<[boolean, string]> {
 		const globals = (globalThis as any).vscode as ISandboxGlobals | undefined;
 		if (globals?.ipcRenderer) {
 			return globals.ipcRenderer.invoke('vscode:asimov-printPdf', htmlPath, pdfPath);

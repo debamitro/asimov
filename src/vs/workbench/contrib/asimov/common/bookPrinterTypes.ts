@@ -8,6 +8,6 @@ import { createDecorator } from '../../../../platform/instantiation/common/insta
 export const IBookPrinterService = createDecorator<IBookPrinterService>('BookPrinterService');
 
 export interface IBookPrinterService {
-	printPdfBook(htmlPath: string, pdfPath: string): Promise<boolean>;
+	printPdfBook(htmlPath: string, pdfPath: string): Promise<[boolean, string]>;
 }
 
