@@ -8,7 +8,7 @@ Asimov is an open-source 'Cursor for writers'. It is a fork of [Void](https://vo
 
 [![Download for MacOS Apple](https://img.shields.io/badge/Download-macOS%20Apple%20DMG-0078d7?style=for-the-badge)](https://github.com/debamitro/asimov/releases/download/0.0.1-002/Asimov.arm64.1.99.3-0.0.1-002.dmg)
 
-[![Download for MacOS Intel](https://img.shields.io/badge/Download-macOS%20Intel%20DMG-0078d7?style=for-the-badge)](https://github.com/debamitro/asimov/releases/download/0.0.1-001/Asimov.x64.1.99.3-0.0.1-001.dmg)
+[![Download for MacOS Intel](https://img.shields.io/badge/Download-macOS%20Intel%20DMG-0078d7?style=for-the-badge)](https://github.com/debamitro/asimov/releases/download/0.0.1-002/Asimov.x64.1.99.3-0.0.1-002.dmg)
 
 ## Examples
 
